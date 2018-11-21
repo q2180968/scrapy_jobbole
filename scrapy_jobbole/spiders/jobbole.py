@@ -15,12 +15,20 @@ class JobboleSpider(scrapy.Spider):
         1、获取文章列表中的文章url并且交给scrapy下载后进行解析
         2、获取下一页url并且交给scrapy进行下载，下载完成后再交给parse
         '''
-        post_urls = response.css('#archive  .floated-thumb .post-thumb a::attr(href)').extract()
-        for post_url in post_urls:
-            url = parse.urljoin(response.url, post_url)
-            yield Request(url=parse.urljoin(response.url, post_url), callback=self.parse_detail)
+        post_nodes = response.css('#archive  .floated-thumb .post-thumb a')
+        for post_node in post_nodes:
+            image_url = post_node.css('img::attr(src)').extract_first('')
+            url = post_node.css('::attr(href)').extract_first('')
+            yield Request(url=parse.urljoin(response.url, url), meta={'front_image_url': image_url},
+                          callback=self.parse1)
 
-        pass
+        next_url = response.css('.next::attr(href)').extract_first('')
+        next_url = parse.urljoin(response.url, next_url)
+        if next_url:
+            yield Request(url=next_url, callback=self.parse)
+
+    def parse1(self, response):
+        print(111)
 
     def parse_detail(self, response):
         # 获取标题
@@ -53,4 +61,3 @@ class JobboleSpider(scrapy.Spider):
             comment = int(match_re.group(1))
         else:
             comment = 0
-        pass
