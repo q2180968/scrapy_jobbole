@@ -3,11 +3,13 @@ import scrapy
 import re
 from scrapy.http import Request
 from urllib import parse
+from scrapy_jobbole.items import AtricleItem
+from scrapy_jobbole.utils import *
 
 
 class JobboleSpider(scrapy.Spider):
     name = 'jobbole'
-    allowed_domains = ['http://blog.jobbole.com/']
+    # allowed_domains = ['http://blog.jobbole.com/all-posts/']
     start_urls = ['http://blog.jobbole.com/all-posts/']
 
     def parse(self, response):
@@ -20,17 +22,16 @@ class JobboleSpider(scrapy.Spider):
             image_url = post_node.css('img::attr(src)').extract_first('')
             url = post_node.css('::attr(href)').extract_first('')
             yield Request(url=parse.urljoin(response.url, url), meta={'front_image_url': image_url},
-                          callback=self.parse1)
+                          callback=self.parse_detail)
 
         next_url = response.css('.next::attr(href)').extract_first('')
         next_url = parse.urljoin(response.url, next_url)
         if next_url:
             yield Request(url=next_url, callback=self.parse)
 
-    def parse1(self, response):
-        print(111)
-
     def parse_detail(self, response):
+
+        article = AtricleItem()
         # 获取标题
         title = response.css('.entry-header h1::text').extract_first('')
         # 获取发布时间
@@ -61,3 +62,13 @@ class JobboleSpider(scrapy.Spider):
             comment = int(match_re.group(1))
         else:
             comment = 0
+        article['title'] = title
+        article['url'] = response.url
+        article['url_object_id'] = getHash(response.url)
+        article['create_date'] = pub_time
+        article['front_image_url'] = [response.meta['front_image_url']]
+        article['comment'] = comment
+        article['collection'] = collection
+        article['enjoy'] = enjoy
+
+        yield article
