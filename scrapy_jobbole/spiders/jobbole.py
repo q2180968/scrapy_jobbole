@@ -12,23 +12,31 @@ class JobboleSpider(scrapy.Spider):
     # allowed_domains = ['http://blog.jobbole.com/all-posts/']
     start_urls = ['http://blog.jobbole.com/all-posts/']
 
+    # 爬虫主程序
     def parse(self, response):
         '''
         1、获取文章列表中的文章url并且交给scrapy下载后进行解析
         2、获取下一页url并且交给scrapy进行下载，下载完成后再交给parse
         '''
+        # 获取爬取路径节点
         post_nodes = response.css('#archive  .floated-thumb .post-thumb a')
+        # 循环节点，获取需要爬取路径和缩略图
         for post_node in post_nodes:
             image_url = post_node.css('img::attr(src)').extract_first('')
             url = post_node.css('::attr(href)').extract_first('')
+            # 通过yield生成器开始爬取，callback调取详情页提取数据
             yield Request(url=parse.urljoin(response.url, url), meta={'front_image_url': image_url},
                           callback=self.parse_detail)
 
+        # 获取下一页url
         next_url = response.css('.next::attr(href)').extract_first('')
         next_url = parse.urljoin(response.url, next_url)
+        # 如果有下一页，通过yield生成器传递给主程序，循环爬取下一页
         if next_url:
-            yield Request(url=next_url, callback=self.parse)
+            # yield Request(url=next_url, callback=self.parse)
+            pass
 
+    # 详情页数据提取
     def parse_detail(self, response):
 
         article = AtricleItem()

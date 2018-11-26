@@ -25,3 +25,4 @@ class AtricleItem(scrapy.Item):
     collection = scrapy.Field()
     tags = scrapy.Field()
     enjoy = scrapy.Field()
+    # content = scrapy.Field()

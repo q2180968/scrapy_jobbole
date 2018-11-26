@@ -67,15 +67,19 @@ NEWSPIDER_MODULE = 'scrapy_jobbole.spiders'
 
 
 ITEM_PIPELINES = {
-    'scrapy_jobbole.pipelines.ScrapyJobbolePipeline': 300,
-    'scrapy_jobbole.pipelines.AtricleItemImagePipeline': 1,
+    # 'scrapy_jobbole.pipelines.ScrapyJobbolePipeline': 300,
+    # 'scrapy_jobbole.pipelines.AtricleItemImagePipeline': 1,
+    # 'scrapy_jobbole.pipelines.ItemSaveMySqlPipeline': 4,
+    'scrapy_jobbole.pipelines.ItemSaveTwistedPipeline': 5,
+    # 'scrapy_jobbole.pipelines.JsonExplorterPipeline': 3,
+    # 'scrapy_jobbole.pipelines.JsonSavePipeline': 2,
     # 'scrapy.pipelines.images.ImagesPipeline': 1,
+
 }
 
 IMAGES_URLS_FIELD = 'front_image_url'  # 图片下载字段
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))  # 文件根目录
 IMAGES_STORE = os.path.join(BASE_DIR, 'images')  # 图片储存目录
-
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -97,3 +101,8 @@ IMAGES_STORE = os.path.join(BASE_DIR, 'images')  # 图片储存目录
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+MYSQL_HOST = "localhost"
+MYSQL_DBNAME = 'jobbole_article'
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "50122294"
