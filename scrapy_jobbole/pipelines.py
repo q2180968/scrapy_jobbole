@@ -22,9 +22,10 @@ class ScrapyJobbolePipeline(object):
 # pipeline图像保存程序
 class AtricleItemImagePipeline(images.ImagesPipeline):
     def item_completed(self, results, item, info):
-        for ok, value in results:
-            image_file_path = value['path']
-        item['front_image_path'] = image_file_path
+        if 'front_image_url' in item:
+            for ok, value in results:
+                image_file_path = value['path']
+            item['front_image_path'] = image_file_path
         return item
 
 
@@ -126,9 +127,12 @@ class ItemSaveTwistedPipeline(object):
     def do_insert(self, cursor, item):
         # 写sql语句
         insert_sql = '''
-                   insert into article_scrapy(title,url,create_date,enjoy)
-                   VALUES(%s,%s,%s,%s)
+                   insert into article_scrapy(title,url,create_date,enjoy,url_object_id,front_image_url,comment,collection,tags,content,front_image_path)
+                   VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                '''
         # 进行查询
-        cursor.execute(insert_sql, (item['title'], item['url'], item['create_date'], item['enjoy']))
+        cursor.execute(insert_sql, (item['title'], item['url'], item['create_date'],
+                                    item['enjoy'], item['url_object_id'], item['front_image_url'],
+                                    item['comment'], item['collection'], item['tags'], item['content'],
+                                    item['front_image_path']))
         # 使用twisted异步提交，不需要commit

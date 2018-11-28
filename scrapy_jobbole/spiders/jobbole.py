@@ -3,8 +3,9 @@ import scrapy
 import re
 from scrapy.http import Request
 from urllib import parse
-from scrapy_jobbole.items import AtricleItem
+from scrapy_jobbole.items import AtricleItem, AtricleItemLoader
 from scrapy_jobbole.utils import *
+from scrapy.loader import ItemLoader
 
 
 class JobboleSpider(scrapy.Spider):
@@ -40,43 +41,58 @@ class JobboleSpider(scrapy.Spider):
     def parse_detail(self, response):
 
         article = AtricleItem()
-        # 获取标题
-        title = response.css('.entry-header h1::text').extract_first('')
-        # 获取发布时间
-        pub_time = response.css('.entry-meta-hide-on-mobile::text').extract_first('').strip().replace('·', '').strip()
-        # 获取tag
-        tag_list = response.css('.entry-meta-hide-on-mobile a::text').extract()
-        tag_list = [emelent for emelent in tag_list if not emelent.strip().endswith('评论')]
-        # 获取内容
-        content = response.css('.entry').extract()
-        # 获取点赞数
-        enjoy = response.css('.vote-post-up h10::text').extract_first('')
-        if enjoy == '':
-            enjoy = 0
-        else:
-            enjoy = int(enjoy)
-        # 获取收藏数
-        collection = response.css('.bookmark-btn::text').extract_first('')
-        pattern = r'.*?(\d+).*?'
-        match_re = re.match(pattern, collection)
-        if match_re:
-            collection = int(match_re.group(1))
-        else:
-            collection = 0
-        # 获取评论数
-        comment = response.css('a[href="#article-comment"] span::text').extract_first('')
-        match_re = re.match(pattern, comment)
-        if match_re:
-            comment = int(match_re.group(1))
-        else:
-            comment = 0
-        article['title'] = title
-        article['url'] = response.url
-        article['url_object_id'] = getHash(response.url)
-        article['create_date'] = pub_time
-        article['front_image_url'] = [response.meta['front_image_url']]
-        article['comment'] = comment
-        article['collection'] = collection
-        article['enjoy'] = enjoy
+        # # 获取标题
+        # title = response.css('.entry-header h1::text').extract_first('')
+        # # 获取发布时间
+        # pub_time = response.css('.entry-meta-hide-on-mobile::text').extract_first('').strip().replace('·', '').strip()
+        # # 获取tag
+        # tag_list = response.css('.entry-meta-hide-on-mobile a::text').extract()
+        # tag_list = [emelent for emelent in tag_list if not emelent.strip().endswith('评论')]
+        # # 获取内容
+        # content = response.css('.entry').extract()
+        # # 获取点赞数
+        # enjoy = response.css('.vote-post-up h10::text').extract_first('')
+        # if enjoy == '':
+        #     enjoy = 0
+        # else:
+        #     enjoy = int(enjoy)
+        # # 获取收藏数
+        # collection = response.css('.bookmark-btn::text').extract_first('')
+        # pattern = r'.*?(\d+).*?'
+        # match_re = re.match(pattern, collection)
+        # if match_re:
+        #     collection = int(match_re.group(1))
+        # else:
+        #     collection = 0
+        # # 获取评论数
+        # comment = response.css('a[href="#article-comment"] span::text').extract_first('')
+        # match_re = re.match(pattern, comment)
+        # if match_re:
+        #     comment = int(match_re.group(1))
+        # else:
+        #     comment = 0
+        # article['title'] = title
+        # article['url'] = response.url
+        # article['url_object_id'] = getHash(response.url)
+        # article['create_date'] = pub_time
+        # article['front_image_url'] = [response.meta['front_image_url']]
+        # article['comment'] = comment
+        # article['collection'] = collection
+        # article['enjoy'] = enjoy
+
+        # 使用ItemLoad读取数据
+        item_load = AtricleItemLoader(item=AtricleItem(), response=response)
+        item_load.add_css('title', '.entry-header h1::text')
+        item_load.add_value('url', response.url)
+        item_load.add_value('url_object_id', getHash(response.url))
+        item_load.add_css('create_date', '.entry-meta-hide-on-mobile::text')
+        item_load.add_value('front_image_url', response.meta['front_image_url'])
+        item_load.add_css('comment', 'a[href="#article-comment"] span::text')
+        item_load.add_css('collection', '.bookmark-btn::text')
+        item_load.add_css('enjoy', '.vote-post-up h10::text')
+        item_load.add_css('tags', '.entry-meta-hide-on-mobile a::text')
+        item_load.add_css('content', '.entry')
+
+        article = item_load.load_item()
 
         yield article

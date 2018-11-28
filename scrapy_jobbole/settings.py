@@ -68,7 +68,7 @@ NEWSPIDER_MODULE = 'scrapy_jobbole.spiders'
 
 ITEM_PIPELINES = {
     # 'scrapy_jobbole.pipelines.ScrapyJobbolePipeline': 300,
-    # 'scrapy_jobbole.pipelines.AtricleItemImagePipeline': 1,
+    'scrapy_jobbole.pipelines.AtricleItemImagePipeline': 1,
     # 'scrapy_jobbole.pipelines.ItemSaveMySqlPipeline': 4,
     'scrapy_jobbole.pipelines.ItemSaveTwistedPipeline': 5,
     # 'scrapy_jobbole.pipelines.JsonExplorterPipeline': 3,
